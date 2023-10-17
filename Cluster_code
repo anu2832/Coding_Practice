@@ -1,0 +1,67 @@
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
+#include <vector>
+
+struct CityCoordinates
+{
+    std::string name;
+    float latitude;
+    float longitude;
+};
+
+int main()
+{
+    std::vector<CityCoordinates> cityGroups;
+    std::ifstream file("File1");
+
+    if (!file.is_open())
+    {
+        std::cerr << "Error opening the file." << std::endl;
+        return 1;
+    }
+
+    std::string line;
+    while (std::getline(file, line))
+    {
+        std::stringstream dataStream(line);
+        std::string item;
+
+        CityCoordinates city;
+        std::getline(dataStream, city.name, ',');
+        dataStream >> city.latitude;
+
+        cityGroups.push_back(city);
+    }
+    file.close();
+
+    std::vector<std::vector<std::string>> cityCoordinatesCluster;
+    while (!cityGroups.empty()) {
+        std::vector<std::string> cityCluster;
+        CityCoordinates centerCity = cityGroups[0];
+        cityCluster.push_back(centerCity.name);
+        cityGroups.erase(cityGroups.begin());
+
+        for (auto it = cityGroups.begin(); it != cityGroups.end();) {
+            if (std::abs(centerCity.latitude - it->latitude) <= 10.0) {
+                cityCluster.push_back(it->name);
+                it = cityGroups.erase(it);
+            } else {
+                ++it;
+            }
+        }
+        cityCoordinatesCluster.push_back(cityCluster);
+    }
+
+    for (int index = 0; index < cityCoordinatesCluster.size(); index++)
+    {
+        std::cout << "City Claster " << index + 1 << "\n";
+        for (int iterator = 0; iterator < cityCoordinatesCluster[index].size(); iterator++)
+        {
+            std::cout << cityCoordinatesCluster[index][iterator] << ", ";
+        }
+        std::cout << "\n\n";
+    }
+    return 0;
+}
